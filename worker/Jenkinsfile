@@ -17,19 +17,20 @@ pipeline {
             steps {
                 script {
                     sh 'echo Build Docker Image'
-                    sh 'cd worker && docker build -t vinod1188/example-worker-app:${BUILD_NUMBER} .'
+                    sh 'cd worker && docker build -t vinod.azurecr.io/example-worker-app:${BUILD_NUMBER} .'
                 }
             }
         }
 
-        stage('push artifacts') {
+        stage ('Azure login and push the Docker image to ACR') {
             steps {
-                script {
-                    sh 'echo push the docker image'
-                    sh 'docker push vinod1188/example-worker-app:${BUILD_NUMBER}'
-                    def dockerImage = docker.image("vinod1188/example-worker-app:${BUILD_NUMBER}")
-                    docker.withRegistry('https://index.docker.io/v1/', "docker-creds") {
-                        dockerImage.push("${BUILD_NUMBER}")
+                withCredentials([usernamePassword(credentialsId: 'Azure_ACR_Credentials', passwordVariable: 'password', usernameVariable: 'username')]) {
+                    script {
+                        // Docker login to Azure ACR
+                        sh 'docker login -u $username -p $password vinod.azurecr.io'
+                
+                        // Push the Docker image to ACR
+                        sh 'docker image push vinod.azurecr.io/example-worker-app:${BUILD_NUMBER}'
                     }
                 }
             }
