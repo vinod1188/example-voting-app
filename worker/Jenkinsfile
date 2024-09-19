@@ -46,7 +46,7 @@ pipeline {
                         git add deploy/deploy.yml
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                         git push https://${GITHUB_TOKEN}@github.com/vinod1188/example-voting-app HEAD:main
-                    '''
+                        '''
                 }
             }
         }
