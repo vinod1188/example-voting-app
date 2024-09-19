@@ -15,5 +15,5 @@ spec:
         app: worker
     spec:
       containers:
-      - image: dockersamples/examplevotingapp_worker
+      - image: vinod.azurecr.io/example-worker-app:replaceImageTags
         name: worker
