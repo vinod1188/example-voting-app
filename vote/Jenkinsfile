@@ -1,0 +1,54 @@
+pipeline {
+
+    agent any
+
+    environment {
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/vinod1188/example-voting-app.git'
+            }
+        }
+
+        stage('build docker') {
+            steps {
+                script {
+                    sh 'echo Build Docker Image'
+                    sh 'cd worker && docker build -t vinod.azurecr.io/example-vote-app:${BUILD_NUMBER} .'
+                }
+            }
+        }
+
+        stage ('Azure login and push the Docker image to ACR') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'Azure_ACR_Credentials', passwordVariable: 'password', usernameVariable: 'username')]) {
+                    script {
+                        // Docker login to Azure ACR
+                        sh 'docker login -u $username -p $password vinod.azurecr.io'
+                
+                        // Push the Docker image to ACR
+                        sh 'docker image push vinod.azurecr.io/example-vote-app:${BUILD_NUMBER}'
+                    }
+                }
+            }
+        }
+
+        stage('update k8 manifest file and push') {
+            steps {
+                withCredentials([string(credentialsId: 'githubID', variable: 'GITHUB_TOKEN')]) {
+                    sh '''
+                    git config user.email "vinod118888@gmail.com"
+                    git config user.name "vinod1188"
+                    sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" k8s-specifications/vote-deployment.yaml
+                    git  add k8s-specifications/vote-deployment.yaml
+                    git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                    git push https://${GITHUB_TOKEN}@github.com/vinod1188/example-voting-app HEAD:main
+                    '''
+                }
+            }
+        }
+    }
+}
