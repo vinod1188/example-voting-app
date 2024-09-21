@@ -15,5 +15,5 @@ spec:
         app: worker
     spec:
       containers:
-      - image: vinod.azurecr.io/example-worker-app:15s
+      - image: vinod.azurecr.io/example-worker-app:replaceImageTag
         name: worker

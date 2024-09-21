@@ -15,7 +15,7 @@ spec:
         app: result
     spec:
       containers:
-      - image: vinod.azurecr.io/example-result-app:1
+      - image: vinod.azurecr.io/example-result-app:replaceImageTag
         name: result
         ports:
         - containerPort: 80
